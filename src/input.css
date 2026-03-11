@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@theme {
+--animate-line-slide: line-slide 0.8s ease-out forwards;
+
+@keyframes line-slide {
+    from {
+    transform: scaleX(0);
+    opacity: 0;
+    }
+    to {
+    transform: scaleX(1);
+    opacity: 1;
+    }
+    }
+}
+
+/* كلاس مخصص للخطين بتوعنا */
+.zsc-line {
+  transform-origin: right; /* عشان يرسم من اليمين للشمال زي العربي */
+animation: var(--animate-line-slide);
+}

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="src/output.css" rel="stylesheet">
+    <style>
+        body {
+            height: 100vh;
+            height: 100dvh;
+        }
+        .lectures-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+        .lectures-panel.open {
+            max-height: 1000px;
+        }
+        .arrow {
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        .arrow.open {
+            transform: rotate(180deg);
+        }
+        
+    </style>
+</head>
+<body class="bg-[#121212] text-white font-sans overflow-hidden flex flex-col relative w-full">
+
+    <!-- OVERLAY للموبايل -->
+    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-40 hidden opacity-0 transition-opacity duration-300 md:hidden"></div>
+
+    <!-- هيدر الموبايل -->
+    <header class="md:hidden bg-[#1a1a1a] border-b border-white/5 p-4 flex justify-between items-center z-30 shadow-md shrink-0">
+        <div>
+            <h2 class="text-xl font-bold tracking-wider">Maro <span class="text-[#E30613]">DASH</span></h2>
+        </div>
+        <button onclick="toggleSidebar()" class="text-white hover:text-[#E30613] transition focus:outline-none p-1">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+        </button>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden relative w-full">
+        <aside id="sidebar" class="fixed md:static inset-y-0 right-0 z-50 w-64 bg-[#1a1a1a] h-full p-6 border-l border-white/5 shadow-2xl transform translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shrink-0">
+            <div class="mb-10 flex justify-between items-start shrink-0">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-wider">Maro <span class="text-[#E30613]">DASH</span></h2>
+                    <div class="mt-2 space-y-1">
+                        <div class="h-1 w-[68px] bg-[#E30613] zsc-line"></div>
+                        <div class="h-1 w-[45px] bg-[#E30613] zsc-line"></div>
+                    </div>
+                </div>
+                <!-- زر القفل في الموبايل -->
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-500 hover:text-[#E30613] transition p-1">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="space-y-2 flex-1 mt-4 overflow-y-auto pr-1 pb-24 md:pb-0">
+                <div id="navHome" onclick="showPage('home')" class="bg-[#E30613]/10 text-[#E30613] p-3 rounded-xl font-bold cursor-pointer">الرئيسية</div>
+                <hr class="border-t border-[#E30613]/20 my-4 shadow-[0_0_10px_rgba(227,6,19,0.1)]">
+                <div id="navDiary" onclick="showPage('diary')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">اليوميات</div>
+                <div id="navSubjects" onclick="showPage('subjects')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">مواد الكلية</div>
+                <div id="navCourses" onclick="showPage('courses')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">تتبع الكورسات</div>
+                <hr class="border-t border-white/5 my-4">
+                <div id="navSettings" onclick="showPage('settings')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">الإعدادات</div>
+            </nav>
+        </aside>
+
+        <main class="flex-1 p-6 md:p-10 pb-24 md:pb-10 overflow-y-auto w-full">
+
+            <!-- HOME PAGE -->
+            <div id="pageHome">
+                <header class="mb-10">
+                    <h1 class="text-4xl font-extrabold">جاهز لإنجاز جديد <span class="text-[#E30613]">النهاردة؟</span></h1>
+                </header>
+
+                <!-- STATS CARDS -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mb-12">
+                    <div class="bg-[#1a1a1a] p-6 rounded-2xl border border-white/5 border-t-[3px] border-t-[#E30613] shadow-md hover:bg-white/5 transition flex flex-col items-center justify-center">
+                        <p class="text-sm text-gray-400 mb-1">محاضرات خلصت</p>
+                        <p id="statLecDone" class="text-4xl font-black text-white">0</p>
+                        <p id="statLecTotal" class="text-xs text-gray-500 mt-2 bg-black/20 px-3 py-1 rounded-full">من 0 محاضرة</p>
+                    </div>
+                    <div class="bg-[#1a1a1a] p-6 rounded-2xl border border-white/5 border-t-[3px] border-t-[#E30613] shadow-md hover:bg-white/5 transition flex flex-col items-center justify-center">
+                        <p class="text-sm text-gray-400 mb-1">متوسط المواد</p>
+                        <p id="statSubAvg" class="text-4xl font-black text-white">0%</p>
+                        <p class="text-xs text-gray-500 mt-2 bg-black/20 px-3 py-1 rounded-full">إجمالي التقدم</p>
+                    </div>
+                    <div class="bg-[#1a1a1a] p-6 rounded-2xl border border-white/5 border-t-[3px] border-t-[#E30613] shadow-md hover:bg-white/5 transition flex flex-col items-center justify-center">
+                        <p class="text-sm text-gray-400 mb-1">متوسط الكورسات</p>
+                        <p id="statCrsAvg" class="text-4xl font-black text-white">0%</p>
+                        <p class="text-xs text-gray-500 mt-2 bg-black/20 px-3 py-1 rounded-full">إجمالي التقدم</p>
+                    </div>
+                </div>
+
+                <!-- SUBJECTS OVERVIEW -->
+                <p class="text-sm text-gray-400 mb-4 font-bold">مواد الكلية</p>
+                <div id="homeSubjects" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mb-12"></div>
+
+                <!-- COURSES OVERVIEW -->
+                <p class="text-sm text-gray-400 mb-4 font-bold">تتبع الكورسات</p>
+                <div id="homeCourses" class="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-5xl"></div>
+            </div>
+
+            <!-- DIARY PAGE -->
+            <div id="pageDiary" class="hidden">
+                <header class="mb-12">
+                    <h1 class="text-4xl font-extrabold"><span class="text-white">اليوميات</span></h1>
+                </header>
+
+                <div class="bg-[#1a1a1a] p-6 rounded-2xl border-t-4 border-[#E30613] max-w-2xl mb-10">
+                    <h3 class="text-[#E30613] font-bold text-xl mb-4 border-b border-white/5 pb-2">سجل إنجاز جديد</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">النوع</label>
+                            <select id="entryType" class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E30613] transition">
+                                <option value="subject" class="bg-[#1a1a1a]">مادة كلية</option>
+                                <option value="course" class="bg-[#1a1a1a]">كورس خارجي</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">اسم المادة / الكورس</label>
+                            <input id="entrySubject" type="text" placeholder="مثال: هندسة البرمجيات"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="text-xs text-gray-500 block mb-1">عملت إيه النهارده؟</label>
+                        <input id="entryDone" type="text" placeholder="مثال: حليت 5 أسئلة على الـ Trees"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600">
+                    </div>
+                    <div class="mb-4">
+                        <label class="text-xs text-gray-500 block mb-1">لسه إيه اللي باقي؟</label>
+                        <input id="entryRemaining" type="text" placeholder="مثال: لسه Chapter 4 و 5"
+                        class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600">
+                    </div>
+                    <div class="mb-6">
+                        <label class="text-xs text-gray-500 block mb-1">ملاحظات إضافية (اختياري)</label>
+                        <textarea id="entryNotes" placeholder="أي حاجة تانية عايز تسجلها..."
+                        class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600 resize-y" rows="3"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button onclick="saveEntry()" class="bg-[#E30613] text-white px-6 py-2 rounded-lg hover:bg-[#c30510] transition-all">حفظ الإنجاز</button>
+                    </div>
+                </div>
+
+                <div class="max-w-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <p class="text-xs text-gray-600 tracking-widest">السجلات السابقة</p>
+                        <button onclick="clearAllEntries()" class="text-xs text-gray-400 hover:text-[#E30613] transition font-bold hidden" id="clearAllBtn">مسح الكل</button>
+                    </div>
+                    <div id="entriesList" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <!-- SUBJECTS PAGE -->
+            <div id="pageSubjects" class="hidden">
+                <header class="mb-12">
+                    <h1 class="text-4xl font-extrabold"><span class="text-white">مواد الكلية</span></h1>
+                </header>
+                <div id="subjectsList" class="max-w-2xl space-y-4"></div>
+            </div>
+
+            <!-- COURSES PAGE -->
+            <div id="pageCourses" class="hidden">
+                <header class="mb-12">
+                    <h1 class="text-4xl font-extrabold"><span class="text-white">تتبع الكورسات</span></h1>
+                </header>
+                <div id="coursesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl"></div>
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div id="pageSettings" class="hidden">
+                <header class="mb-12">
+                    <h1 class="text-3xl md:text-4xl font-extrabold flex-wrap"><span class="text-white">الإعدادات</span></h1>
+                </header>
+
+                <div class="max-w-2xl space-y-8">
+
+                    <!-- SUBJECTS SETTINGS -->
+                    <div class="bg-[#1a1a1a] p-6 rounded-2xl border-t-4 border-[#E30613] mb-6">
+                        <h3 class="text-white font-bold text-lg mb-4 pb-2 border-b border-white/5">مواد الكلية</h3>
+                        <div id="settingsSubjectsList" class="space-y-2 mb-4"></div>
+                        <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                            <input id="newSubjectName" type="text" placeholder="اسم المادة"
+                                class="flex-1 bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600">
+                            <div class="flex gap-2">
+                                <input id="newSubjectLectures" type="number" placeholder="عدد المحاضرات" min="1" max="50" value="12"
+                                    class="w-full sm:w-36 bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600">
+                                <button onclick="addSubject()" class="bg-[#E30613] hover:bg-[#c30510] text-white px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-bold transition shrink-0">إضافة</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COURSES SETTINGS -->
+                    <div class="bg-[#1a1a1a] p-6 rounded-2xl border-t-4 border-[#E30613]">
+                        <h3 class="text-white font-bold text-lg mb-4 pb-2 border-b border-white/5">الكورسات</h3>
+                        <div id="settingsCoursesList" class="space-y-2 mb-4"></div>
+                        <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                            <input id="newCourseName" type="text" placeholder="اسم الكورس"
+                                class="flex-1 bg-white/5 border border-white/10 rounded-lg p-3 text-white text-sm focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600">
+                            <button onclick="addCourse()" class="bg-[#E30613] hover:bg-[#c30510] text-white px-6 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-bold transition shrink-0">إضافة</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 md:left-5 md:translate-x-0 flex flex-col gap-2 z-50"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
