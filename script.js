@@ -10,6 +10,7 @@ const ALL_PAGES = [
   "pageSubjects",
   "pageCourses",
   "pageSettings",
+  "pageContact",
 ];
 const ALL_NAVS = [
   "navHome",
@@ -17,6 +18,7 @@ const ALL_NAVS = [
   "navSubjects",
   "navCourses",
   "navSettings",
+  "navContact",
 ];
 
 // ===== SIDEBAR MOBILE =====
