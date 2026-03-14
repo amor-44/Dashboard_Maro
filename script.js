@@ -311,32 +311,66 @@ function renderCourses() {
     .map((c, ci) => {
       const percent = data[c.name] || 0;
       return `
-      <div class="bg-[#1a1a1a] p-6 rounded-2xl border-t-4 border-[#E30613] hover:scale-105 transition-transform duration-100 mt-1">
+      <div class="bg-[#1a1a1a] p-6 rounded-2xl border-t-4 border-[#E30613] hover:scale-[1.02] transition-transform duration-300 mt-1">
         <h3 class="text-xl font-bold mb-4">${c.name}</h3>
         <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden mb-2">
-          <div id="crs-bar-${ci}" class="bg-[#E30613] h-full transition-all duration-300" style="width:${percent}%"></div>
+          <div id="crs-bar-${ci}" class="bg-[#E30613] h-full transition-all duration-1000 ease-out" style="width:${percent}%"></div>
         </div>
         <p id="crs-pct-${ci}" class="text-xs text-gray-500 mb-4">${percent}% مكتمل</p>
         <div class="flex items-center gap-2">
-          <button onclick="updateCourse(${ci}, '${c.name}', -10)"
-              class="flex-1 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-sm py-2 rounded-lg transition">-10%</button>
-          <button onclick="updateCourse(${ci}, '${c.name}', 10)"
-              class="flex-1 bg-[#E30613]/10 hover:bg-[#E30613]/20 text-[#E30613] text-sm py-2 rounded-lg transition">+10%</button>
-          <button onclick="resetCourse(${ci}, '${c.name}')"
-              class="bg-white/5 hover:bg-white/10 text-gray-600 hover:text-gray-300 text-xs px-3 py-2 rounded-lg transition">reset</button>
+          <input type="number" id="crs-val-${ci}" placeholder="مثال: 15" min="1" max="100"
+              class="w-full bg-white/5 border border-white/10 rounded-lg p-2 text-white text-center text-sm focus:outline-none focus:border-[#E30613] transition"
+              onkeypress="if(event.key === 'Enter') addCoursePercent(${ci}, '${c.name}')">
+          <button onclick="addCoursePercent(${ci}, '${c.name}')"
+              class="bg-[#E30613]/10 hover:bg-[#E30613]/20 text-[#E30613] text-sm px-4 py-2 rounded-lg transition font-bold shrink-0">إضافة %</button>
         </div>
+        <button onclick="resetCourse(${ci}, '${c.name}')"
+              class="w-full mt-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white text-xs px-3 py-2 rounded-lg transition">تصفير الإنجاز</button>
       </div>`;
     })
     .join("");
 }
 
-function updateCourse(ci, name, delta) {
+function addCoursePercent(ci, name) {
+  const inputEl = document.getElementById(`crs-val-${ci}`);
+  let addedValue = parseInt(inputEl.value);
+  
+  if (isNaN(addedValue) || addedValue <= 0) {
+    showToast("اكتب نسبة صحيحة الأول!", "error");
+    return;
+  }
+  
   const data = getCrsData();
-  const updated = Math.min(100, Math.max(0, (data[name] || 0) + delta));
+  const currentVal = data[name] || 0;
+  const updated = Math.min(100, currentVal + addedValue);
+  
   data[name] = updated;
   saveCrsData(data);
+  
   document.getElementById(`crs-bar-${ci}`).style.width = updated + "%";
-  document.getElementById(`crs-pct-${ci}`).textContent = updated + "% مكتمل";
+  
+  // Smoothly count up the text
+  const pctEl = document.getElementById(`crs-pct-${ci}`);
+  let startVal = currentVal;
+  const dur = 1000;
+  const steps = 30; // 30 updates
+  const stepTime = dur / steps;
+  const valStep = (updated - currentVal) / steps;
+  
+  let i = 0;
+  let counter = setInterval(() => {
+    i++;
+    startVal += valStep;
+    if (i >= steps) {
+        startVal = updated;
+        clearInterval(counter);
+    }
+    pctEl.textContent = Math.round(startVal) + "% مكتمل";
+  }, stepTime);
+  
+  inputEl.value = "";
+  
+  showToast(`عاش! تم إضافة ${addedValue}% لتقدم الكورس.`, "success");
 }
 
 function resetCourse(ci, name) {
