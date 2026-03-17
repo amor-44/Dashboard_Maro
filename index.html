@@ -4,18 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BNK5CTEJK3"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-BNK5CTEJK3');
-</script>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BNK5CTEJK3"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-BNK5CTEJK3');
+    </script>
+    
+    <!-- Preconnect for Performance -->
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="preconnect" href="https://unpkg.com">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="src/output.css" rel="stylesheet">
-    <script src="https://unpkg.com/@vercel/analytics/dist/vercel-analytics.iife.js"></script>
     <style>
         body {
             height: 100vh;
@@ -240,7 +244,7 @@
                         <div class="flex flex-col md:flex-row gap-8 items-center md:items-start relative z-10">
                             <!-- Avatar / Initials -->
                             <div class="w-32 h-32 rounded-full overflow-hidden bg-linear-to-br from-[#2a2a2a] to-[#121212] flex items-center justify-center border-4 border-[#1a1a1a] shadow-[0_0_20px_rgba(227,6,19,0.15)] shrink-0 group-hover:border-[#E30613]/50 group-hover:shadow-[0_0_30px_rgba(227,6,19,0.3)] transition-all duration-500">
-                                <img src="Amr2.png" alt="Profile Picture" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 rounded-full">
+                                <img src="Amr2.png" alt="Profile Picture" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 rounded-full">
                             </div>
 
                             <div class="flex-1 text-center md:text-right">
@@ -298,6 +302,7 @@
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 md:left-5 md:translate-x-0 flex flex-col gap-2 z-50"></div>
 
-    <script src="script.js"></script>
+    <script defer src="script.js"></script>
+    <script defer src="https://unpkg.com/@vercel/analytics/dist/vercel-analytics.iife.js"></script>
 </body>
 </html>
