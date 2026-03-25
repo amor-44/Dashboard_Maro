@@ -21,10 +21,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="src/output.css" rel="stylesheet">
     <style>
-        body {
-            height: 100vh;
-            height: 100dvh;
-        }
         .lectures-panel {
             max-height: 0;
             overflow: hidden;
@@ -43,13 +39,13 @@
         
     </style>
 </head>
-<body class="bg-[#121212] text-white font-sans overflow-hidden flex flex-col relative w-full">
+<body class="bg-[#121212] text-white font-sans min-h-screen flex flex-col relative w-full">
 
     <!-- OVERLAY للموبايل -->
     <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-40 hidden opacity-0 transition-opacity duration-300 md:hidden"></div>
 
     <!-- هيدر الموبايل -->
-    <header class="md:hidden bg-[#1a1a1a] border-b border-white/5 p-4 flex justify-between items-center z-30 shadow-md shrink-0">
+    <header class="md:hidden bg-[#1a1a1a] border-b border-white/5 p-4 flex justify-between items-center z-30 shadow-md sticky top-0 shrink-0">
         <div>
             <h2 class="text-xl font-bold tracking-wider">Maro <span class="text-[#E30613]">DASH</span></h2>
         </div>
@@ -60,8 +56,8 @@
         </button>
     </header>
 
-    <div class="flex flex-1 overflow-hidden relative w-full">
-        <aside id="sidebar" class="fixed md:static inset-y-0 right-0 z-50 w-64 bg-[#1a1a1a] h-full p-6 border-l border-white/5 shadow-2xl transform translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shrink-0">
+    <div class="flex flex-1 relative w-full">
+        <aside id="sidebar" class="fixed md:sticky md:top-0 inset-y-0 right-0 z-50 w-64 bg-[#1a1a1a] h-screen p-6 border-l border-white/5 shadow-2xl transform translate-x-full md:translate-x-0 transition-transform duration-300 flex flex-col shrink-0">
             <div class="mb-10 flex justify-between items-start shrink-0">
                 <div>
                     <h2 class="text-2xl font-bold tracking-wider">Maro <span class="text-[#E30613]">DASH</span></h2>
@@ -91,7 +87,7 @@
             </nav>
         </aside>
 
-        <main class="flex-1 p-6 md:p-10 pb-24 md:pb-10 overflow-y-auto w-full">
+        <main class="flex-1 p-6 md:p-10 pb-24 md:pb-10 w-full">
 
             <!-- HOME PAGE -->
             <div id="pageHome">
