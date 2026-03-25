@@ -823,8 +823,9 @@ function renderPlanner() {
             <input id="newTaskText-${plan.id}" type="text" placeholder="مهمة جديدة..."
                 class="flex-1 bg-white/5 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600"
                 onkeypress="if(event.key === 'Enter') addTaskToPlan(${plan.id})">
-            <input id="newTaskDeadline-${plan.id}" type="date" title="تحديد موعد نهائي للمهمة"
-                class="w-full sm:w-auto bg-white/5 border border-white/10 rounded-lg p-2.5 text-gray-400 text-sm focus:outline-none focus:border-[#E30613] transition scheme-dark">
+            <input id="newTaskDeadline-${plan.id}" type="text" placeholder="تاريخ الانتهاء (اختياري)" title="تحديد موعد نهائي للمهمة"
+                onfocus="this.type='date';" onblur="if(!this.value) this.type='text'"
+                class="w-full sm:w-32 lg:w-40 bg-white/5 border border-white/10 rounded-lg p-2.5 text-gray-400 text-sm focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600 sm:text-center shrink-0 focus:text-white" style="color-scheme: dark;">
             <button onclick="addTaskToPlan(${plan.id})" class="bg-white/10 hover:bg-[#E30613] text-white px-5 py-2.5 rounded-lg text-sm font-bold transition shrink-0">إضافة</button>
         </div>
       </div>
