@@ -84,6 +84,7 @@
                 <div id="navDiary" onclick="showPage('diary')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">اليوميات</div>
                 <div id="navSubjects" onclick="showPage('subjects')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">مواد الكلية</div>
                 <div id="navCourses" onclick="showPage('courses')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">تتبع الكورسات</div>
+                <div id="navPlanner" onclick="showPage('planner')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">خطة الأيام</div>
                 <hr class="border-t border-white/5 my-4">
                 <div id="navSettings" onclick="showPage('settings')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">الإعدادات</div>
                 <div id="navContact" onclick="showPage('contact')" class="text-gray-400 hover:text-white p-3 rounded-xl transition cursor-pointer">تواصل معي</div>
@@ -193,6 +194,38 @@
                 <div id="coursesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 max-w-6xl"></div>
             </div>
 
+            <!-- PLANNER PAGE -->
+            <div id="pagePlanner" class="hidden">
+                <header class="mb-12">
+                    <h1 class="text-3xl md:text-4xl font-extrabold"><span class="text-white">خطة الأيام</span></h1>
+                </header>
+
+                <!-- Add New Plan -->
+                <div class="bg-[#1a1a1a] p-6 rounded-2xl border-t-4 border-[#E30613] max-w-3xl mb-10">
+                    <h3 class="text-[#E30613] font-bold text-xl mb-4 border-b border-white/5 pb-2">خطة جديدة</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">اسم الخطة / الهدف</label>
+                            <input id="planTitle" type="text" placeholder="مثال: زنقة ميد، زنقة فاينل، أو تاسكات"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">عدد الأيام</label>
+                            <input id="planDays" type="number" placeholder="مثال: 10" min="1"
+                            class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button onclick="savePlan()" class="bg-[#E30613] text-white px-6 py-2 rounded-lg hover:bg-[#c30510] transition-all font-bold tracking-wide">إنشاء الخطة</button>
+                    </div>
+                </div>
+
+                <!-- Plans List -->
+                <div id="plansList" class="max-w-3xl space-y-6"></div>
+            </div>
+
+
+            
             <!-- SETTINGS PAGE -->
             <div id="pageSettings" class="hidden">
                 <header class="mb-12">
@@ -301,6 +334,18 @@
 
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 md:left-5 md:translate-x-0 flex flex-col gap-2 z-50"></div>
+
+    <!-- CUSTOM CONFIRM MODAL -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/80 z-[100] hidden items-center justify-center opacity-0 transition-opacity duration-300">
+        <div id="confirmBox" class="bg-[#1a1a1a] p-6 rounded-2xl border-t-4 border-[#E30613] max-w-sm w-[90%] transform scale-95 transition-transform duration-300 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-2" id="confirmTitle">تأكيد الحذف</h3>
+            <p class="text-gray-400 text-sm mb-6" id="confirmMessage">هل أنت متأكد؟</p>
+            <div class="flex gap-3 justify-end">
+                <button id="confirmCancelBtn" class="px-5 py-2 rounded-lg bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition text-sm font-bold">إلغاء</button>
+                <button id="confirmActionBtn" class="px-5 py-2 rounded-lg bg-[#E30613] text-white hover:bg-[#c30510] transition text-sm font-bold">حذف</button>
+            </div>
+        </div>
+    </div>
 
     <script defer src="script.js"></script>
     <script defer src="https://unpkg.com/@vercel/analytics/dist/vercel-analytics.iife.js"></script>

@@ -9,6 +9,7 @@ const ALL_PAGES = [
   "pageDiary",
   "pageSubjects",
   "pageCourses",
+  "pagePlanner",
   "pageSettings",
   "pageContact",
 ];
@@ -17,6 +18,7 @@ const ALL_NAVS = [
   "navDiary",
   "navSubjects",
   "navCourses",
+  "navPlanner",
   "navSettings",
   "navContact",
 ];
@@ -62,6 +64,7 @@ function showPage(page) {
   if (page === "diary") renderEntries();
   if (page === "subjects") renderSubjects();
   if (page === "courses") renderCourses();
+  if (page === "planner") renderPlanner();
   if (page === "settings") renderSettings();
 
   // Close sidebar on mobile if open
@@ -125,11 +128,11 @@ function deleteEntry(id) {
 }
 
 function clearAllEntries() {
-  if (confirm("أكيد عايز تمسح كل السجلات؟ (مش هتقدر ترجعهم تاني)")) {
+  showConfirm("مسح السجلات", "أكيد عايز تمسح كل السجلات؟ (مش هتقدر ترجعهم تاني)", () => {
     localStorage.removeItem("zsc_diary");
     renderEntries();
     showToast("تم مسح كل السجلات.", "success");
-  }
+  });
 }
 
 function renderEntries() {
@@ -517,18 +520,19 @@ function addSubject() {
 }
 
 function removeSubject(index) {
-  if (!confirm("هتمسح المادة دي وكل بياناتها، متأكد؟")) return;
-  const cfg = getSubConfig();
-  const name = cfg[index].name;
-  cfg.splice(index, 1);
-  saveSubConfig(cfg);
+  showConfirm("حذف المادة", "هتمسح المادة دي وكل بياناتها، متأكد؟", () => {
+      const cfg = getSubConfig();
+      const name = cfg[index].name;
+      cfg.splice(index, 1);
+      saveSubConfig(cfg);
 
-  // مسح البيانات المرتبطة
-  const data = getSubData();
-  delete data[name];
-  delete data[name + "_notes"];
-  saveSubData(data);
-  renderSettings();
+      const data = getSubData();
+      delete data[name];
+      delete data[name + "_notes"];
+      saveSubData(data);
+      renderSettings();
+      showToast("تم حذف المادة بنجاح.", "success");
+  });
 }
 
 function addCourse() {
@@ -552,16 +556,55 @@ function addCourse() {
 }
 
 function removeCourse(index) {
-  if (!confirm("هتمسح الكورس ده وبياناته، متأكد؟")) return;
-  const cfg = getCrsConfig();
-  const name = cfg[index].name;
-  cfg.splice(index, 1);
-  saveCrsConfig(cfg);
+  showConfirm("حذف الكورس", "هتمسح الكورس ده وكل تقدم عملته فيه، متأكد؟", () => {
+      const cfg = getCrsConfig();
+      const name = cfg[index].name;
+      cfg.splice(index, 1);
+      saveCrsConfig(cfg);
 
-  const data = getCrsData();
-  delete data[name];
-  saveCrsData(data);
-  renderSettings();
+      const data = getCrsData();
+      delete data[name];
+      saveCrsData(data);
+      renderSettings();
+      showToast("تم حذف الكورس بنجاح.", "success");
+  });
+}
+
+// ===== CUSTOM CONFIRM MODAL =====
+function showConfirm(title, message, onConfirm) {
+  const modal = document.getElementById("confirmModal");
+  const titleEl = document.getElementById("confirmTitle");
+  const msgEl = document.getElementById("confirmMessage");
+  const box = document.getElementById("confirmBox");
+  const confirmBtn = document.getElementById("confirmActionBtn");
+  const cancelBtn = document.getElementById("confirmCancelBtn");
+
+  titleEl.textContent = title;
+  msgEl.textContent = message;
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  setTimeout(() => {
+    modal.classList.remove("opacity-0");
+    box.classList.remove("scale-95");
+  }, 10);
+
+  const cleanup = () => {
+    modal.classList.add("opacity-0");
+    box.classList.add("scale-95");
+    setTimeout(() => {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }, 300);
+    confirmBtn.onclick = null;
+    cancelBtn.onclick = null;
+  };
+
+  cancelBtn.onclick = cleanup;
+  confirmBtn.onclick = () => {
+    cleanup();
+    onConfirm();
+  };
 }
 
 // ===== TOAST NOTIFICATIONS =====
@@ -598,7 +641,200 @@ function showToast(message, type = "success") {
   }, 3000);
 }
 
+// ===== PLANNER =====
+function getPlans() {
+  return JSON.parse(localStorage.getItem("zsc_planner") || "[]");
+}
+
+function savePlansToStorage(plans) {
+  localStorage.setItem("zsc_planner", JSON.stringify(plans));
+}
+
+function savePlan() {
+  const title = document.getElementById("planTitle").value.trim();
+  const days = parseInt(document.getElementById("planDays").value);
+
+  if (!title || isNaN(days) || days <= 0) {
+    showToast("اكتب اسم الخطة وعدد الأيام بشكل صحيح!", "error");
+    return;
+  }
+
+  const startDate = new Date();
+  const endDate = new Date();
+  endDate.setDate(startDate.getDate() + days);
+
+  const plan = {
+    id: Date.now(),
+    title,
+    days,
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+    tasks: []
+  };
+
+  const plans = getPlans();
+  plans.unshift(plan);
+  savePlansToStorage(plans);
+
+  document.getElementById("planTitle").value = "";
+  document.getElementById("planDays").value = "";
+
+  renderPlanner();
+  showToast("تم إنشاء الخطة بنجاح!", "success");
+}
+
+function deletePlan(id) {
+  showConfirm("مسح الخطة", "أكيد عايز تمسح الخطة دي بكل مهامها وتقاريرها؟", () => {
+      const plans = getPlans().filter(p => p.id !== id);
+      savePlansToStorage(plans);
+      renderPlanner();
+      showToast("تم مسح الخطة.", "success");
+  });
+}
+
+function addTaskToPlan(planId) {
+  const taskInput = document.getElementById(`newTaskText-${planId}`);
+  const deadlineInput = document.getElementById(`newTaskDeadline-${planId}`);
+  
+  const text = taskInput.value.trim();
+  const deadline = deadlineInput.value;
+
+  if (!text) {
+    showToast("اكتب المهمة الأول!", "error");
+    return;
+  }
+
+  const plans = getPlans();
+  const planIndex = plans.findIndex(p => p.id === planId);
+  if (planIndex === -1) return;
+
+  plans[planIndex].tasks.push({
+    id: Date.now(),
+    text,
+    deadline,
+    done: false
+  });
+
+  savePlansToStorage(plans);
+  renderPlanner();
+}
+
+function togglePlanTask(planId, taskId) {
+  const plans = getPlans();
+  const plan = plans.find(p => p.id === planId);
+  if (!plan) return;
+
+  const task = plan.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  task.done = !task.done;
+  savePlansToStorage(plans);
+  renderPlanner();
+}
+
+function deletePlanTask(planId, taskId) {
+  const plans = getPlans();
+  const plan = plans.find(p => p.id === planId);
+  if (!plan) return;
+
+  plan.tasks = plan.tasks.filter(t => t.id !== taskId);
+  savePlansToStorage(plans);
+  renderPlanner();
+}
+
+function renderPlanner() {
+  const list = document.getElementById("plansList");
+  const plans = getPlans();
+  
+  if (!plans.length) {
+    list.innerHTML = `<div class="text-center py-12 text-gray-600"><p class="text-sm">مفيش خطط حالياً.. ابدأ خطط لأهدافك!</p></div>`;
+    return;
+  }
+  
+  list.innerHTML = plans.map(plan => {
+    const totalTasks = plan.tasks.length;
+    const doneTasks = plan.tasks.filter(t => t.done).length;
+    const progress = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100);
+    
+    const end = new Date(plan.endDate);
+    const now = new Date();
+    const endT = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
+    const nowT = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const diffDays = Math.ceil((endT - nowT) / (1000 * 60 * 60 * 24));
+
+    let daysText = "";
+    if (diffDays > 0) {
+      daysText = `باقي ${diffDays} يوم`;
+    } else if (diffDays === 0) {
+      daysText = "النهاردة آخر يوم للجدول!";
+    } else {
+      daysText = `الجدول انتهى من ${Math.abs(diffDays)} يوم`;
+    }
+
+    const tasksHtml = plan.tasks.map(t => {
+      let taskDeadlineHtml = "";
+      if (t.deadline) {
+        const tParts = t.deadline.split("-");
+        const tEnd = new Date(tParts[0], tParts[1] - 1, tParts[2]).getTime();
+        const tDiffDays = Math.ceil((tEnd - nowT) / (1000 * 60 * 60 * 24));
+        
+        let cClass = tDiffDays < 0 ? "text-[#E30613]" : (tDiffDays === 0 ? "text-yellow-500" : "text-gray-400");
+        let txt = tDiffDays < 0 ? `متأخر ${Math.abs(tDiffDays)} يوم` : (tDiffDays === 0 ? "النهاردة!" : `باقي ${tDiffDays} يوم`);
+        taskDeadlineHtml = `<span class="text-[10px] sm:text-xs mr-auto px-2 py-1 rounded-full bg-black/20 font-bold whitespace-nowrap ${cClass}">${txt}</span>`;
+      }
+
+      return `
+        <div onclick="togglePlanTask(${plan.id}, ${t.id})" class="flex items-center gap-3 p-3 bg-white/5 rounded-lg mb-2 hover:bg-white/10 transition group cursor-pointer text-right">
+          <input type="checkbox" ${t.done ? "checked" : ""} class="w-4 h-4 accent-[#E30613] cursor-pointer shrink-0" onclick="event.stopPropagation()" onchange="togglePlanTask(${plan.id}, ${t.id})">
+          <span class="text-sm ${t.done ? 'text-gray-500 line-through' : 'text-white'} break-words flex-1 transition-all">${t.text}</span>
+          ${taskDeadlineHtml}
+          <button onclick="event.stopPropagation(); deletePlanTask(${plan.id}, ${t.id})" class="text-gray-600 hover:text-[#E30613] text-xs opacity-100 md:opacity-0 group-hover:opacity-100 transition p-1 shrink-0">مسح</button>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <div class="bg-[#1a1a1a] p-5 sm:p-6 rounded-2xl border-t-4 border-[#E30613] relative overflow-hidden group/plan mt-2 shadow-sm hover:shadow-md transition">
+        <div class="flex justify-between items-start mb-4 pr-1">
+            <div class="max-w-[70%] text-right">
+                <h3 class="text-xl font-bold text-white mb-1">${plan.title}</h3>
+                <span class="inline-block text-xs font-bold px-2 py-1 rounded bg-white/5 ${diffDays < 0 ? 'text-[#E30613]' : 'text-gray-400'}">خطة ${plan.days} أيام — ${daysText}</span>
+            </div>
+            <div class="flex items-center gap-3 mt-1 pl-2 md:pl-0">
+                <span class="text-2xl font-black text-[#E30613]">${progress}%</span>
+                <button onclick="deletePlan(${plan.id})" class="text-gray-500 transition p-2 z-10 md:opacity-0 group-hover/plan:opacity-100 bg-white/5 rounded-full hover:bg-[#E30613] hover:text-white flex items-center justify-center shrink-0" title="مسح الخطة">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="w-full bg-black/40 h-2.5 rounded-full overflow-hidden mb-6 shadow-inner">
+            <div class="bg-[#E30613] h-full transition-all duration-1000 ease-out shadow-[0_0_10px_#E30613]" style="width:${progress}%"></div>
+        </div>
+
+        <div class="mb-4 text-right">
+            <h4 class="text-sm font-bold text-gray-300 mb-3 border-b border-white/5 pb-2">المهام المطلوبة</h4>
+            <div class="space-y-1">
+                ${tasksHtml}
+            </div>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-2 mt-4 pt-4 border-t border-white/5">
+            <input id="newTaskText-${plan.id}" type="text" placeholder="مهمة جديدة..."
+                class="flex-1 bg-white/5 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-[#E30613] transition placeholder:text-gray-600"
+                onkeypress="if(event.key === 'Enter') addTaskToPlan(${plan.id})">
+            <input id="newTaskDeadline-${plan.id}" type="date" title="تحديد موعد نهائي للمهمة"
+                class="w-full sm:w-auto bg-white/5 border border-white/10 rounded-lg p-2.5 text-gray-400 text-sm focus:outline-none focus:border-[#E30613] transition scheme-dark">
+            <button onclick="addTaskToPlan(${plan.id})" class="bg-white/10 hover:bg-[#E30613] text-white px-5 py-2.5 rounded-lg text-sm font-bold transition shrink-0">إضافة</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   showPage("home");
 });
+
+
